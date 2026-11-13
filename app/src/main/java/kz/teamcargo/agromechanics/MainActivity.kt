@@ -12,6 +12,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
@@ -231,58 +233,97 @@ private fun CabinScreen(onBack: () -> Unit) {
     val visible = cabinControls.filter { group == "Все" || it.zone == group }
     val selected = cabinControls.firstOrNull { it.id == selectedId } ?: cabinControls.first()
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp)) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = onBack) { Text("← Назад", color = accent) }
             Spacer(Modifier.weight(1f))
             Text("МТЗ-82.1", color = accent, fontWeight = FontWeight.Bold)
         }
         Text("КАБИНА И ОРГАНЫ УПРАВЛЕНИЯ", color = accent, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-        Text("Интерактивная учебная схема", color = mainText, fontSize = 23.sp, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(6.dp))
-        Text("Выбери зону, затем нажми на орган управления. Схема условная: расположение и комплектация сверяются с конкретным трактором.", color = muted, fontSize = 12.sp, lineHeight = 17.sp)
-        Spacer(Modifier.height(12.dp))
-        CabinIllustration { id ->
-            cabinControls.firstOrNull { it.id == id }?.let { control ->
-                selectedId = control.id
-                group = control.zone
-            }
-        }
-        Spacer(Modifier.height(10.dp))
+        Text("Фотографии реальной кабины", color = mainText, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(
+            "Фотографии взяты из открытых каталогов и объявлений. Комплектации и годы выпуска могут отличаться. Точное расположение сверяй с заводской схемой своей модификации.",
+            color = muted, fontSize = 12.sp, lineHeight = 17.sp
+        )
+
+        CabinPhoto(
+            title = "Рабочее место оператора",
+            url = "https://ireland.apollo.olxcdn.com/v1/files/a2frisjzw5gt3-UA/image%3Bs%3D1000x750",
+            source = "Фото из объявления МТЗ-82.1, OLX"
+        )
+        CabinPhoto(
+            title = "Приборная панель и рулевое управление",
+            url = "https://ar.kg/uploads/catalog/products/full/1739886219_31595500.jpg",
+            source = "Каталог BELARUS-82.1, ar.kg"
+        )
+        CabinPhoto(
+            title = "Приборы крупным планом",
+            url = "https://ar.kg/uploads/catalog/products/full/1739886265_06277000.jpg",
+            source = "Каталог BELARUS-82.1, ar.kg"
+        )
+
+        Text("ЗАВОДСКИЕ СХЕМЫ", color = accent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        Text("Рис. 2.1.1 — передняя панель, руль и педали. Рис. 2.1.2 — рычаги и органы управления возле сиденья. Нумерация в карточках ниже пока не наносится на фото, чтобы не путать расположение.", color = mainText, fontSize = 12.sp, lineHeight = 17.sp)
+        Text("Открыть заводское руководство МТЗ: mtz.ru → «БЕЛАРУС 80.1/82.1/820»", color = accent, fontSize = 12.sp)
+
         Text("ВЫБОР ЗОНЫ", color = muted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        LazyColumn(Modifier.heightIn(max = 104.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            items(groups.chunked(2)) { pair ->
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    pair.forEach { item ->
-                        FilterChip(selected = group == item, onClick = { group = item; visible.firstOrNull { it.zone == item }?.let { selectedId = it.id } }, label = { Text(item, fontSize = 10.sp) })
-                    }
+        groups.chunked(2).forEach { pair ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                pair.forEach { item ->
+                    FilterChip(
+                        selected = group == item,
+                        onClick = {
+                            group = item
+                            cabinControls.firstOrNull { item == "Все" || it.zone == item }?.let { selectedId = it.id }
+                        },
+                        label = { Text(item, fontSize = 10.sp) }
+                    )
                 }
             }
         }
+
         Text("ОРГАНЫ УПРАВЛЕНИЯ", color = muted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        LazyColumn(Modifier.heightIn(max = 160.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            items(visible, key = { it.id }) { control ->
-                Surface(color = if (selectedId == control.id) Color(0xFF344B38) else panel, shape = RoundedCornerShape(9.dp), modifier = Modifier.fillMaxWidth().clickable { selectedId = control.id }) {
-                    Text(control.title, color = mainText, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 11.dp, vertical = 9.dp))
-                }
+        visible.forEach { control ->
+            Surface(
+                color = if (selectedId == control.id) Color(0xFF344B38) else panel,
+                shape = RoundedCornerShape(9.dp),
+                modifier = Modifier.fillMaxWidth().clickable { selectedId = control.id }
+            ) {
+                Text(control.title, color = mainText, fontSize = 13.sp, modifier = Modifier.padding(horizontal = 12.dp, vertical = 11.dp))
             }
         }
-        Spacer(Modifier.height(8.dp))
-        Surface(color = panel, shape = RoundedCornerShape(14.dp), modifier = Modifier.weight(1f).fillMaxWidth()) {
-            LazyColumn(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                item {
-                    Text(selected.zone.uppercase(), color = accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text(selected.title, color = mainText, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-                    Text("НАЗНАЧЕНИЕ", color = accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text(selected.purpose, color = mainText, fontSize = 13.sp, lineHeight = 19.sp)
-                    Text("КАК РАБОТАЕТ", color = accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text(selected.action, color = mainText, fontSize = 13.sp, lineHeight = 19.sp)
-                    Text("БЕЗОПАСНОСТЬ", color = Color(0xFFE3B66D), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text(selected.caution, color = mainText, fontSize = 13.sp, lineHeight = 19.sp)
-                    Spacer(Modifier.height(4.dp))
-                    Text("Статус: учебное описание. Перед практикой сверить орган и процедуру с руководством именно вашей модификации.", color = muted, fontSize = 11.sp, lineHeight = 16.sp)
-                }
+
+        Surface(color = panel, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                Text(selected.zone.uppercase(), color = accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(selected.title, color = mainText, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                Text("НАЗНАЧЕНИЕ", color = accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(selected.purpose, color = mainText, fontSize = 13.sp, lineHeight = 19.sp)
+                Text("КАК РАБОТАЕТ", color = accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(selected.action, color = mainText, fontSize = 13.sp, lineHeight = 19.sp)
+                Text("БЕЗОПАСНОСТЬ", color = Color(0xFFE3B66D), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(selected.caution, color = mainText, fontSize = 13.sp, lineHeight = 19.sp)
+                Text("Статус: учебное описание. Перед практикой сверить орган и процедуру с руководством конкретной модификации.", color = muted, fontSize = 11.sp, lineHeight = 16.sp)
             }
+        }
+    }
+}
+
+@Composable
+private fun CabinPhoto(title: String, url: String, source: String) {
+    Surface(color = panel, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text(title, color = mainText, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            coil.compose.AsyncImage(
+                model = url,
+                contentDescription = title,
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 150.dp, max = 280.dp)
+            )
+            Text(source, color = muted, fontSize = 10.sp)
         }
     }
 }
