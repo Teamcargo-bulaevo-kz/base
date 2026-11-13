@@ -133,8 +133,6 @@ private val cabinControls = listOf(
     CabinControl("heater", "Отопитель и вентиляция", "Верхняя панель", "Обеспечивают обогрев и циркуляцию воздуха в кабине.", "Кран отопителя регулирует подачу горячей охлаждающей жидкости, вентилятор перемещает воздух, дефлекторы задают направление потока.", "При запотевании стёкол обеспечить обзор до начала движения. Не перекрывать вентиляцию полностью.")
 )
 
-@Composable
-
 private data class CabinHotspot(val id: String, val number: String, val x: Float, val y: Float)
 
 @Composable
@@ -225,6 +223,7 @@ private fun CabinIllustration(onSelect: (String) -> Unit) {
     Text("Нажми на номер, чтобы открыть описание элемента", color = muted, fontSize = 10.sp)
 }
 
+@Composable
 private fun CabinScreen(onBack: () -> Unit) {
     var selectedId by remember { mutableStateOf("wheel") }
     var group by remember { mutableStateOf("Все") }
