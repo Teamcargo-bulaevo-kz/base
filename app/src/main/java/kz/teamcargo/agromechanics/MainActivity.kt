@@ -332,7 +332,9 @@ private fun AgroApp(prefs: android.content.SharedPreferences) {
             }
             Spacer(Modifier.height(16.dp))
 
-            if (showCabin) {\n                CabinScreen(onBack = { showCabin = false })\n            } else if (selected == null) {
+            if (showCabin) {
+                CabinScreen(onBack = { showCabin = false })
+            } else if (selected == null) {
                 Surface(color = panel, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
                     BasicTextField(
                         value = query,
@@ -352,7 +354,15 @@ private fun AgroApp(prefs: android.content.SharedPreferences) {
                     FilterChip(selected = showSaved, onClick = { showSaved = true }, label = { Text("Избранное") })
                 }
                 Spacer(Modifier.height(10.dp))
-                Surface(color = Color(0xFF26372B), shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth().clickable { showCabin = true }) {\n                    Column(Modifier.padding(14.dp)) {\n                        Text("ПРАКТИКУМ • МТЗ-82.1", color = accent, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)\n                        Text("Кабина и органы управления →", color = mainText, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)\n                        Text("Интерактивная схема, педали, рычаги и приборы", color = muted, fontSize = 12.sp)\n                    }\n                }\n                Spacer(Modifier.height(12.dp))\n                Text("УЧЕБНЫЕ МАТЕРИАЛЫ", color = muted, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
+                Surface(color = Color(0xFF26372B), shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth().clickable { showCabin = true }) {
+                    Column(Modifier.padding(14.dp)) {
+                        Text("ПРАКТИКУМ • МТЗ-82.1", color = accent, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                        Text("Кабина и органы управления →", color = mainText, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Интерактивная схема, педали, рычаги и приборы", color = muted, fontSize = 12.sp)
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Text("УЧЕБНЫЕ МАТЕРИАЛЫ", color = muted, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
                 Spacer(Modifier.height(8.dp))
                 val filtered = lessons.filter { lesson ->
                     val matchesQuery = query.isBlank() ||
