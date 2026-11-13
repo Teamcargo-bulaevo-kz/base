@@ -130,6 +130,97 @@ private val cabinControls = listOf(
 )
 
 @Composable
+
+private data class CabinHotspot(val id: String, val number: String, val x: Float, val y: Float)
+
+@Composable
+private fun CabinIllustration(onSelect: (String) -> Unit) {
+    val spots = listOf(
+        CabinHotspot("cluster", "1", .49f, .28f),
+        CabinHotspot("starter", "2", .20f, .42f),
+        CabinHotspot("lights", "3", .79f, .39f),
+        CabinHotspot("turn", "4", .67f, .46f),
+        CabinHotspot("wheel", "5", .49f, .63f),
+        CabinHotspot("hydraulic", "6", .91f, .45f),
+        CabinHotspot("gear", "7", .78f, .70f),
+        CabinHotspot("pto", "8", .90f, .61f),
+        CabinHotspot("clutch", "9", .22f, .88f),
+        CabinHotspot("brake", "10", .49f, .88f),
+        CabinHotspot("throttle", "11", .77f, .88f),
+        CabinHotspot("ground", "12", .96f, .77f),
+        CabinHotspot("heater", "13", .12f, .20f),
+        CabinHotspot("wiper", "14", .86f, .20f)
+    )
+    BoxWithConstraints(
+        Modifier.fillMaxWidth().height(252.dp)
+            .background(Color(0xFF111B15), RoundedCornerShape(14.dp))
+    ) {
+        val w = constraints.maxWidth.toFloat()
+        val h = constraints.maxHeight.toFloat()
+        Canvas(Modifier.fillMaxSize()) {
+            val cw = size.width
+            val ch = size.height
+            val frame = Color(0xFF63766A)
+            val metal = Color(0xFF34483B)
+            val darkMetal = Color(0xFF202D25)
+            val edge = Color(0xFF829487)
+            // Cab frame and windshield
+            drawRoundRect(darkMetal, Offset(cw*.06f,ch*.04f), androidx.compose.ui.geometry.Size(cw*.88f,ch*.90f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(18f))
+            drawRoundRect(frame, Offset(cw*.09f,ch*.07f), androidx.compose.ui.geometry.Size(cw*.82f,ch*.33f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(10f), style=Stroke(4f))
+            drawLine(edge, Offset(cw*.50f,ch*.07f), Offset(cw*.50f,ch*.39f), strokeWidth=2f)
+            // Dashboard fascia
+            drawRoundRect(metal, Offset(cw*.13f,ch*.31f), androidx.compose.ui.geometry.Size(cw*.74f,ch*.20f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(12f))
+            drawRoundRect(Color(0xFF17221B), Offset(cw*.32f,ch*.34f), androidx.compose.ui.geometry.Size(cw*.36f,ch*.12f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(7f))
+            // Instrument cluster gauges
+            listOf(.39f,.48f,.57f,.63f).forEachIndexed { i, x ->
+                drawCircle(Color(0xFF9AA99C), radius=ch*.023f, center=Offset(cw*x,ch*.40f), style=Stroke(2f))
+                drawLine(Color(0xFFB8D68A), Offset(cw*x,ch*.40f), Offset(cw*(x+.008f),ch*.385f), strokeWidth=2f)
+            }
+            // Steering column and wheel
+            drawLine(edge, Offset(cw*.50f,ch*.47f), Offset(cw*.50f,ch*.58f), strokeWidth=7f)
+            drawCircle(Color(0xFF101713), radius=ch*.115f, center=Offset(cw*.50f,ch*.64f), style=Stroke(8f))
+            drawCircle(edge, radius=ch*.022f, center=Offset(cw*.50f,ch*.64f))
+            drawLine(edge, Offset(cw*.50f,ch*.64f), Offset(cw*.50f,ch*.54f), strokeWidth=5f)
+            drawLine(edge, Offset(cw*.50f,ch*.64f), Offset(cw*.42f,ch*.69f), strokeWidth=4f)
+            drawLine(edge, Offset(cw*.50f,ch*.64f), Offset(cw*.58f,ch*.69f), strokeWidth=4f)
+            // Side consoles
+            drawRoundRect(metal, Offset(cw*.78f,ch*.47f), androidx.compose.ui.geometry.Size(cw*.13f,ch*.31f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(8f))
+            drawRoundRect(metal, Offset(cw*.10f,ch*.50f), androidx.compose.ui.geometry.Size(cw*.12f,ch*.27f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(8f))
+            // Gear and hydraulic levers
+            listOf(.81f,.87f,.91f).forEachIndexed { i, x ->
+                drawLine(edge, Offset(cw*x,ch*.69f), Offset(cw*(x-.015f),ch*.57f), strokeWidth=4f)
+                drawCircle(Color(0xFFB8D68A), radius=ch*.018f, center=Offset(cw*(x-.015f),ch*.57f))
+            }
+            drawLine(edge, Offset(cw*.16f,ch*.65f), Offset(cw*.18f,ch*.52f), strokeWidth=4f)
+            drawCircle(Color(0xFFB8D68A), radius=ch*.018f, center=Offset(cw*.18f,ch*.52f))
+            // Seat
+            drawRoundRect(Color(0xFF53665A), Offset(cw*.39f,ch*.73f), androidx.compose.ui.geometry.Size(cw*.22f,ch*.08f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(9f))
+            drawRoundRect(Color(0xFF53665A), Offset(cw*.43f,ch*.68f), androidx.compose.ui.geometry.Size(cw*.14f,ch*.09f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(8f))
+            // Floor and pedals
+            drawRoundRect(Color(0xFF26372D), Offset(cw*.13f,ch*.80f), androidx.compose.ui.geometry.Size(cw*.74f,ch*.14f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(8f))
+            listOf(.22f,.49f,.77f).forEach { x ->
+                drawLine(edge, Offset(cw*x,ch*.84f), Offset(cw*x,ch*.91f), strokeWidth=5f)
+                drawRoundRect(Color(0xFF9BA99E), Offset(cw*(x-.035f),ch*.90f), androidx.compose.ui.geometry.Size(cw*.07f,ch*.025f), cornerRadius=androidx.compose.ui.geometry.CornerRadius(4f))
+            }
+            // Side window / upper roof outline
+            drawLine(frame, Offset(cw*.07f,ch*.04f), Offset(cw*.07f,ch*.91f), strokeWidth=5f)
+            drawLine(frame, Offset(cw*.93f,ch*.04f), Offset(cw*.93f,ch*.91f), strokeWidth=5f)
+            drawLine(frame, Offset(cw*.07f,ch*.05f), Offset(cw*.93f,ch*.05f), strokeWidth=5f)
+        }
+        spots.forEach { spot ->
+            Box(
+                Modifier.offset(x = maxWidth * spot.x - 13.dp, y = maxHeight * spot.y - 13.dp)
+                    .size(26.dp).background(accent, RoundedCornerShape(50))
+                    .clickable { onSelect(spot.id) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(spot.number, color = Color(0xFF172014), fontSize = 11.sp, fontWeight = FontWeight.Black)
+            }
+        }
+    }
+    Text("Нажми на номер, чтобы открыть описание элемента", color = muted, fontSize = 10.sp)
+}
+
 private fun CabinScreen(onBack: () -> Unit) {
     var selectedId by remember { mutableStateOf("wheel") }
     var group by remember { mutableStateOf("Все") }
@@ -148,39 +239,10 @@ private fun CabinScreen(onBack: () -> Unit) {
         Spacer(Modifier.height(6.dp))
         Text("Выбери зону, затем нажми на орган управления. Схема условная: расположение и комплектация сверяются с конкретным трактором.", color = muted, fontSize = 12.sp, lineHeight = 17.sp)
         Spacer(Modifier.height(12.dp))
-        Surface(color = panel, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(12.dp)) {
-                Text("СХЕМА КАБИНЫ — ВИД ОПЕРАТОРА", color = muted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("Передняя панель", "Рулевая колонка").forEach { zone ->
-                        Surface(color = Color(0xFF26372B), shape = RoundedCornerShape(10.dp), modifier = Modifier.weight(1f).clickable { group = zone; selectedId = cabinControls.first { it.zone == zone }.id }) {
-                            Text(zone, color = mainText, fontSize = 11.sp, modifier = Modifier.padding(10.dp))
-                        }
-                    }
-                }
-                Spacer(Modifier.height(7.dp))
-                Surface(color = Color(0xFF26372B), shape = RoundedCornerShape(10.dp), modifier = Modifier.fillMaxWidth().clickable { group = "Рабочее место"; selectedId = "wheel" }) {
-                    Text("             РУЛЕВОЕ КОЛЕСО / МЕСТО ОПЕРАТОРА", color = mainText, fontSize = 11.sp, modifier = Modifier.padding(10.dp))
-                }
-                Spacer(Modifier.height(7.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Surface(color = Color(0xFF26372B), shape = RoundedCornerShape(10.dp), modifier = Modifier.weight(1f).clickable { group = "Пол и педали"; selectedId = "clutch" }) {
-                        Text("ПЕДАЛИ\nСцепление • тормоза • газ", color = mainText, fontSize = 11.sp, modifier = Modifier.padding(10.dp))
-                    }
-                    Surface(color = Color(0xFF26372B), shape = RoundedCornerShape(10.dp), modifier = Modifier.weight(1f).clickable { group = "Трансмиссия"; selectedId = "gear" }) {
-                        Text("ТРАНСМИССИЯ\nПередачи • диапазоны", color = mainText, fontSize = 11.sp, modifier = Modifier.padding(10.dp))
-                    }
-                }
-                Spacer(Modifier.height(7.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Surface(color = Color(0xFF26372B), shape = RoundedCornerShape(10.dp), modifier = Modifier.weight(1f).clickable { group = "Боковая зона"; selectedId = "ground" }) {
-                        Text("БОКОВАЯ ЗОНА\nМасса • останов", color = mainText, fontSize = 11.sp, modifier = Modifier.padding(10.dp))
-                    }
-                    Surface(color = Color(0xFF26372B), shape = RoundedCornerShape(10.dp), modifier = Modifier.weight(1f).clickable { group = "Правая зона"; selectedId = "hydraulic" }) {
-                        Text("ГИДРАВЛИКА / ВОМ\nНавеска • привод", color = mainText, fontSize = 11.sp, modifier = Modifier.padding(10.dp))
-                    }
-                }
+        CabinIllustration { id ->
+            cabinControls.firstOrNull { it.id == id }?.let { control ->
+                selectedId = control.id
+                group = control.zone
             }
         }
         Spacer(Modifier.height(10.dp))
