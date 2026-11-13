@@ -264,6 +264,64 @@ private fun CabinIllustration(onSelect: (String) -> Unit) {
     Text("Нажми на номер, чтобы открыть описание элемента", color = muted, fontSize = 10.sp)
 }
 
+private val prestartChecklist = listOf(
+    "Площадка ровная, трактор устойчиво установлен",
+    "Коробка передач в нейтрали, стояночный тормоз включён",
+    "ВОМ отключён, навеска опущена или надёжно зафиксирована",
+    "Под трактором нет следов топлива, масла и охлаждающей жидкости",
+    "Шины, колёса, крепления и ступени без видимых повреждений",
+    "Рулевое управление, тормоза и световые приборы осмотрены",
+    "Уровень моторного масла проверен штатным способом",
+    "Охлаждающая жидкость проверена только на остывшем двигателе",
+    "Топливо есть, видимых подтеканий нет",
+    "Воздушный фильтр и индикатор засорённости осмотрены, если установлены",
+    "Аккумулятор закреплён, корпус и клеммы без видимых повреждений",
+    "Ступени и обувь очищены; подъём в кабину с опорой на поручни",
+    "Сиденье и зеркала настроены, обзорность достаточная",
+    "Людей рядом с трактором и навесным оборудованием нет"
+)
+
+@Composable
+private fun PrestartChecklistScreen(onBack: () -> Unit) {
+    val checked = remember { mutableStateListOf<Boolean>().apply { repeat(prestartChecklist.size) { add(false) } } }
+    val done = checked.count { it }
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = onBack) { Text("← Назад", color = accent) }
+            Spacer(Modifier.weight(1f))
+            Text("МТЗ-82.1", color = accent, fontWeight = FontWeight.Bold)
+        }
+        Text("ПРАКТИЧЕСКИЙ ЧЕК-ЛИСТ", color = accent, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Text("Осмотр перед запуском", color = mainText, fontSize = 23.sp, fontWeight = FontWeight.Bold)
+        Text("Отмечай пункты по мере проверки. Чек-лист помогает не пропустить этапы, но не заменяет руководство конкретного трактора.", color = muted, fontSize = 13.sp, lineHeight = 19.sp)
+        Text("Выполнено: $done из ${prestartChecklist.size}", color = accent, fontWeight = FontWeight.Bold)
+        LinearProgressIndicator(progress = { done.toFloat() / prestartChecklist.size }, modifier = Modifier.fillMaxWidth(), color = accent)
+        prestartChecklist.forEachIndexed { index, item ->
+            Surface(color = panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(checked = checked[index], onCheckedChange = { checked[index] = it })
+                    Text(item, color = mainText, fontSize = 13.sp, lineHeight = 18.sp, modifier = Modifier.weight(1f))
+                }
+            }
+        }
+        Surface(color = Color(0xFF3A2D20), shape = RoundedCornerShape(10.dp)) {
+            Text(
+                "СТОП: если обнаружена утечка, неисправность тормозов или рулевого управления, повреждение колеса либо аварийный сигнал — не начинай работу до устранения причины.",
+                color = Color(0xFFFFD9A6), fontSize = 12.sp, lineHeight = 18.sp, modifier = Modifier.padding(12.dp)
+            )
+        }
+        OutlinedButton(onClick = { for (i in checked.indices) checked[i] = false }, modifier = Modifier.fillMaxWidth()) {
+            Text("Сбросить отметки")
+        }
+    }
+}
+
 @Composable
 private fun CabinScreen(onBack: () -> Unit) {
     var selectedId by remember { mutableStateOf("wheel") }
@@ -448,7 +506,7 @@ class MainActivity : ComponentActivity() {
 private fun AgroApp(prefs: android.content.SharedPreferences) {
     var query by remember { mutableStateOf("") }
     var selected by remember { mutableStateOf<Lesson?>(null) }
-    var showCabin by remember { mutableStateOf(false) }
+    var showCabin by remember { mutableStateOf(false) }\n    var showChecklist by remember { mutableStateOf(false) }
     var showQuiz by remember { mutableStateOf(false) }
     var showSaved by remember { mutableStateOf(false) }
     var bookmarks by remember { mutableStateOf(prefs.getStringSet("bookmarks", emptySet())?.toSet() ?: emptySet()) }
