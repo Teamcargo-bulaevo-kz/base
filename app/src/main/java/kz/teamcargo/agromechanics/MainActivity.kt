@@ -346,6 +346,59 @@ private fun CabinPhoto(title: String, url: String, source: String) {
     }
 }
 
+private data class QuizQuestion(val question: String, val options: List<String>, val correct: Int, val explanation: String)
+
+private val mtzQuiz = listOf(
+    QuizQuestion("Какое главное отличие типового МТЗ-82 от МТЗ-80?", listOf("У МТЗ-82 есть передний ведущий мост", "У МТЗ-82 нет сцепления", "Двигатель расположен сзади"), 0, "МТЗ-82 имеет привод переднего ведущего моста; типовой МТЗ-80 — заднеприводный."),
+    QuizQuestion("Для чего служит сцепление?", listOf("Охлаждает двигатель", "Временно разъединяет двигатель и трансмиссию", "Поднимает навеску"), 1, "Сцепление позволяет разъединить поток мощности от двигателя к трансмиссии."),
+    QuizQuestion("Что делает коробка передач?", listOf("Изменяет передаточное отношение", "Фильтрует топливо", "Заряжает аккумулятор"), 0, "Передача меняет соотношение скорости движения и тягового усилия."),
+    QuizQuestion("Для чего предназначен ВОМ?", listOf("Для включения стартера", "Для передачи вращения рабочим органам агрегата", "Для управления рулём"), 1, "ВОМ передаёт механическую мощность подключённой машине, например косилке."),
+    QuizQuestion("Что делать при аварийном сигнале давления масла?", listOf("Продолжать работу на малых оборотах", "Безопасно остановить двигатель и выяснить причину", "Отключить фары"), 1, "Потеря давления масла может быстро повредить двигатель. Нельзя игнорировать сигнал.")
+)
+
+@Composable
+private fun MtzQuizScreen(onBack: () -> Unit) {
+    val answers = remember { mutableStateMapOf<Int, Int>() }
+    var submitted by remember { mutableStateOf(false) }
+    val score = mtzQuiz.indices.count { answers[it] == mtzQuiz[it].correct }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = onBack) { Text("← К уроку", color = accent) }
+            Spacer(Modifier.weight(1f))
+            Text("МТЗ-82.1", color = accent, fontWeight = FontWeight.Bold)
+        }
+        Text("ПРОВЕРКА ЗНАНИЙ", color = accent, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Text("Основные узлы трактора", color = mainText, fontSize = 23.sp, fontWeight = FontWeight.Bold)
+        Text("5 вопросов. Выбери один правильный ответ.", color = muted, fontSize = 13.sp)
+        mtzQuiz.forEachIndexed { index, q ->
+            Surface(color = panel, shape = RoundedCornerShape(13.dp)) {
+                Column(Modifier.padding(13.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                    Text("${index + 1}. ${q.question}", color = mainText, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 20.sp)
+                    q.options.forEachIndexed { optionIndex, option ->
+                        val chosen = answers[index] == optionIndex
+                        val correct = submitted && optionIndex == q.correct
+                        val wrong = submitted && chosen && optionIndex != q.correct
+                        Surface(color = when { correct -> Color(0xFF294B32); wrong -> Color(0xFF512D2D); chosen -> Color(0xFF344B38); else -> Color(0xFF202D25) }, shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth().clickable(enabled = !submitted) { answers[index] = optionIndex }) {
+                            Text(option, color = mainText, fontSize = 13.sp, modifier = Modifier.padding(11.dp))
+                        }
+                    }
+                    if (submitted) {
+                        Text(if (answers[index] == q.correct) "Верно" else "Правильный ответ: ${q.options[q.correct]}", color = accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(q.explanation, color = muted, fontSize = 12.sp, lineHeight = 17.sp)
+                    }
+                }
+            }
+        }
+        if (submitted) {
+            Text("Результат: $score из ${mtzQuiz.size}", color = accent, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Button(onClick = { answers.clear(); submitted = false }, modifier = Modifier.fillMaxWidth()) { Text("Пройти ещё раз") }
+        } else {
+            Button(onClick = { submitted = true }, enabled = answers.size == mtzQuiz.size, modifier = Modifier.fillMaxWidth()) { Text("Проверить ответы") }
+            Text("Ответь на все вопросы, чтобы проверить результат.", color = muted, fontSize = 11.sp)
+        }
+    }
+}
+
 private val bg = Color(0xFF101713)
 private val panel = Color(0xFF1A251E)
 private val accent = Color(0xFFB8D68A)
@@ -375,6 +428,7 @@ private fun AgroApp(prefs: android.content.SharedPreferences) {
     var query by remember { mutableStateOf("") }
     var selected by remember { mutableStateOf<Lesson?>(null) }
     var showCabin by remember { mutableStateOf(false) }
+    var showQuiz by remember { mutableStateOf(false) }
     var showSaved by remember { mutableStateOf(false) }
     var bookmarks by remember { mutableStateOf(prefs.getStringSet("bookmarks", emptySet())?.toSet() ?: emptySet()) }
     var completed by remember { mutableStateOf(prefs.getStringSet("completed", emptySet())?.toSet() ?: emptySet()) }
@@ -392,6 +446,8 @@ private fun AgroApp(prefs: android.content.SharedPreferences) {
 
             if (showCabin) {
                 CabinScreen(onBack = { showCabin = false })
+            } else if (showQuiz) {
+                MtzQuizScreen(onBack = { showQuiz = false })
             } else if (selected == null) {
                 Surface(color = panel, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
                     BasicTextField(
@@ -471,6 +527,11 @@ private fun AgroApp(prefs: android.content.SharedPreferences) {
                         Surface(color = panel, shape = RoundedCornerShape(12.dp)) {
                             Text(paragraph, color = mainText, fontSize = 15.sp, lineHeight = 23.sp, modifier = Modifier.padding(14.dp))
                         }
+                    }
+                }
+                if (lesson.id == "mtz82-overview") {
+                    OutlinedButton(onClick = { showQuiz = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Пройти проверку знаний по МТЗ-82.1")
                     }
                 }
                 Button(
